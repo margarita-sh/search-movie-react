@@ -1,56 +1,43 @@
-import React from 'react';
-import logo from './logo.svg';
-import { Counter } from './features/counter/Counter';
+import React, { useState } from 'react';
+import Card  from './CardComponent/Card';
+
 import './App.css';
 
 function App() {
+  const [searchName, setSearchName] = useState('');
+  const [videos, setVideos] = useState({});
+
+  async function test(searchValue){
+    const keyYoutube = 'AIzaSyCQxy58EJ-LrwU4_j8jOK7nB25tSWURxR0';
+    if (searchValue.key !== 'Enter') {
+      return;
+    }
+    const urlGetId = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=10&q=${searchValue.target.value}&key=${keyYoutube}`;
+
+    const getId = await fetch(urlGetId).then(response => response.json());
+
+    const arrId = getId.items.map((item) => item.id.videoId);
+ 
+    const urlGetVideos = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${arrId.join(',')}&key=${keyYoutube}`;
+    setVideos(await (await fetch(urlGetVideos)).json());
+
+  }
+
+  function changeValue(value) {
+    setSearchName(value);
+  }
+
+  
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Counter />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <span>
-          <span>Learn </span>
-          <a
-            className="App-link"
-            href="https://reactjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux-toolkit.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux Toolkit
-          </a>
-          ,<span> and </span>
-          <a
-            className="App-link"
-            href="https://react-redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React Redux
-          </a>
-        </span>
-      </header>
+    <input type="text" 
+          className="app-input"
+          onKeyUp={e=>test(e)} 
+          value={searchName} 
+          onChange={e=>changeValue(e.target.value)}/>
+          <div className='AppContainer'>
+          <Card videos={videos}/>
+          </div>
     </div>
   );
 }
